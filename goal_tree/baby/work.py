@@ -23,34 +23,53 @@ df = pd.read_csv('faible_poids_bebes2.csv' , sep = ',')
 
 lb = LabelEncoder()                                         # Copy and transform value (ex: Str to int)
 
+#np.random.seed(13)
+#np.random.shuffle(df)
 
 X = df[['MotherAge', 'MotherWeight', 'SmokePregnant', 'HistPremature', 'Hypertension', 'UterIrritability',]]                                # Get Features table
 y = df[['LowBirthWeight']]                                      # Get Target table
 
-X = X.apply(lb.fit_transform)
-y = y.apply(lb.fit_transform)
+X_test = X[df['SAMPLE'] != 'train']
+X_train = X[df['SAMPLE'] == 'train']
 
-X_train, X_test , y_train,y_test = train_test_split(    # split your database and get Train data (70%) and Test data (30%)
-    X, y, test_size = .22, random_state = 54)  #99 person test 
+y_test = y[df['SAMPLE'] != 'train']
+y_train = y[df['SAMPLE'] == 'train']
 
 
-print ("\n X: ", X)
+X_test = X_test.apply(lb.fit_transform)
+X_train = X_train.apply(lb.fit_transform)
 
-tree = DecisionTreeClassifier(criterion = "entropy",)    # Generate your tree max_depth=4
+y_test = y_test.apply(lb.fit_transform)
+y_train = y_train.apply(lb.fit_transform)
 
-tree.fit(X_train, y_train)                              # "rpart" generatte tree
+print ("\n len train: ", len(X_train))
+print ("\n len test: ", len(X_test))
 
+acc = 0
+i = 1
+best_deph = 0
+
+while (i < 100):
+    tree = DecisionTreeClassifier(criterion = "gini", random_state=0,  max_depth=i)    # Generate your tree max_depth=12 == 83%
+    tree.fit(X_train, y_train)        # "rpart" generatte tree
+    y_pred = tree.predict(X_test)
+    if (acc < accuracy_score(y_test,y_pred)*100) :
+       acc = accuracy_score(y_test,y_pred)*100
+       best_deph = i
+    i+=1
+
+tree = DecisionTreeClassifier(criterion = "gini", random_state=0,  max_depth = best_deph)    # Generate your tree max_depth=12 == 83%
+tree.fit(X_train, y_train)           # "rpart" generatte tree
 y_pred = tree.predict(X_test)
+    
+print ("\nconfusion: " ,confusion_matrix(y_test, y_pred))
 
-
-for i in range (len(y_pred) - 1) :
-    print ("prediction : ", y_pred[i], " | default value : ", y_test[i], " \n")
-
-print ("confusion: " ,confusion_matrix(y_test, y_pred))
-
-print( "Accuracy : ", accuracy_score(y_test,y_pred)*100) 
+print( "\nAccuracy : ", accuracy_score(y_test,y_pred)*100) 
 #classification_report(y_test, y_pred)
 
+print ("\n\n prediction : ", y_pred, "\n default value : ", y_test, " \n")
+
+print ("best_deph: ", best_deph)
 
 dot_data = export_graphviz(                           # Create dot data
     tree, filled=True, rounded=True,

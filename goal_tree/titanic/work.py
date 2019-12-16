@@ -19,32 +19,44 @@ from sklearn.tree import export_graphviz
 # get local directory
 folder = os.getcwd() 
 
-df = pd.read_csv('faible_poids_bebes2.csv' , sep = ',')
+df = pd.read_csv(folder + "\\titanic.csv")
+#df = pd.read_csv('golf.csv', sep = '\t')                # read database
+
+
+##def fun_entropy( str, log = 2 ):
+##    count = 0
+##    tempo = []
+##    for i in range (len(df[str].unique())) :
+##        tempo.append((df[str].value_counts()[i]) / len(df[str]))
+##        #print('value ', i, ': ', tempo[i])
+##        count += tempo[i] * math.log(tempo[i], log)
+##    return (-count)
+
 
 lb = LabelEncoder()                                         # Copy and transform value (ex: Str to int)
 
 
-X = df[['MotherAge', 'MotherWeight', 'SmokePregnant', 'HistPremature', 'Hypertension', 'UterIrritability',]]                                # Get Features table
-y = df[['LowBirthWeight']]                                      # Get Target table
+X = df[['pclass', 'sex', 'age', 'sibsp', 'parch',]]                                # Get Features table
+y = df[['survived']]                                      # Get Target table
 
 X = X.apply(lb.fit_transform)
 y = y.apply(lb.fit_transform)
 
 X_train, X_test , y_train,y_test = train_test_split(    # split your database and get Train data (70%) and Test data (30%)
-    X, y, test_size = .22, random_state = 54)  #99 person test 
+    X, y, test_size = .3, random_state = 100)
 
 
 print ("\n X: ", X)
 
-tree = DecisionTreeClassifier(criterion = "entropy",)    # Generate your tree max_depth=4
+tree = DecisionTreeClassifier(criterion = "entropy", max_depth=4)    # Generate your tree
 
 tree.fit(X_train, y_train)                              # "rpart" generatte tree
 
 y_pred = tree.predict(X_test)
 
+print ("prediction : \n", y_pred)
 
-for i in range (len(y_pred) - 1) :
-    print ("prediction : ", y_pred[i], " | default value : ", y_test[i], " \n")
+print ("default value : \n", y_test)
 
 print ("confusion: " ,confusion_matrix(y_test, y_pred))
 
@@ -59,4 +71,4 @@ dot_data = export_graphviz(                           # Create dot data
 )
 
 graph = pydotplus.graph_from_dot_data(dot_data)     # Create graph from dot data
-graph.write_png('tree_baby.png')                         # Write graph to PNG image
+graph.write_png('tree.png')                         # Write graph to PNG image
