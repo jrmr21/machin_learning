@@ -1,3 +1,19 @@
+
+
+# w=10
+# h=10
+# fig=plt.figure(figsize=(8, 8))
+# columns = 4
+# rows = 5
+# for i in range(1, columns*rows +1):
+#     img = np.random.randint(10, size=(h,w))
+#     fig.add_subplot(rows, columns, i)
+#     plt.imshow(img)
+# plt.show()
+
+
+
+
 import os
 import math
 
@@ -13,34 +29,76 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.model_selection import GridSearchCV
-from sklearn.datasets import load_digits
+import seaborn as sns
 
 print ('\n  ************** PICTURE ************** \n ')
 
+# get local directory
+folder = "C:/Users/jrmr/Desktop/machine_learning/random_forest/number"
+
+# lecture des datasets
+df_train = pd.read_csv(folder + "/optdigits_train.csv", header = None)
+df_test  = pd.read_csv(folder + "/optdigits_test.csv", header = None)
+
+# split des datasets
+X_test, y_test   = df_test[range(64)], df_test[64]
+X_train, y_train = df_train[range(64)], df_train[64]
 
 
-##plt.gray() 
-##plt.matshow(digits.images[0]) 
-##plt.show()
+def show_number( number, tab_x, tab_y):
+    img2 = tab_x.iloc[number]
+    img2 = np.array(img2).reshape((8, 8))
+    plt.title(f"L'image est : {tab_y[number]} à la ligne {number}")
+    plt.imshow(img2)
+    return
 
-##pprint(digits.images)
+def show_number_predict( number, tab_x, tab_y, predict):
+    img2 = tab_x.iloc[number]
+    img2 = np.array(img2).reshape((8, 8))
+    plt.title(f"L'image est : {tab_y[number]} et l'algo prédit {predict}")
+    plt.imshow(img2)
+    plt.show()
+    return
 
-        ## ALL TARGET 
-##x = 0
-##for x in range(0, len(digits.target)) :
-##    print ("- ", digits.target[x])
-##    x += 1
 
-digits = load_digits()
+# *************  Afficher les 5 premiers 7 de la tab df_test  *************
 
-##n_samples = len(digits.images)
-##
-##X, y = digits.images, digits.target
-##X = X.reshape((n_samples, -1))
-X = digits['data']
-y = digits['target']
+#   show_number_list (your number to show, number to show, tab X, tab Y, number of "class_search" to skip)
+def show_number_list( class_search, nb_print, tab_x, tab_y, start = 0):
+    i = 0      # 7 count number to 5
+    j = 0      # search number
+    while (i < (nb_print + start)) :
+        if (tab_y[j] == class_search) :
+            i += 1
+            if (i > start) :
+                print("count ", (i - start), "  | position in tab ", j)
+                show_number( j, tab_x, tab_y)
+        j += 1
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, stratify = y, test_size = 0.4)
+
+def show_all_moy() :
+    # show 6 picture moy
+
+    img_moy_k = [np.mean(X_train[y_train == k], axis=0) for k in range(10)]
+    img_moy_k = [np.array(i).reshape((8, 8)) for i in img_moy_k]
+
+    fig     = plt.figure(figsize = (6, 6))
+    columns = 5
+    rows    = 2
+    
+    # print("size ", len(img_moy_k))
+
+    x = 0
+    for i in range(1, columns*rows + 1):
+        fig.add_subplot(rows, columns, i)
+        plt.imshow(img_moy_k[x])
+        x += 1
+    plt.show()
+
+
+    # *****     main        ****** 
+show_all_moy()
+show_number_list( 7, 1, X_train, y_train)
 
 
 # **************************    classification    **************************  
@@ -52,7 +110,7 @@ forest = RandomForestClassifier(n_estimators=500, criterion='gini', max_depth=11
 # Apprentissage de cette foret
 rfFit = forest.fit(X_train, y_train)
 
-print ("features : ", len(X))
+print ("features : ", (len(y_test) + len(y_train)))
 
 # Calculer l'erreur en OOB (en apprentissage)
 print("score TRAIN oob: ", rfFit.oob_score_)
@@ -67,7 +125,7 @@ print('TEST :  ', rfFit.score(X_test, y_test))
 
 # **************************    régréssion    **************************  
 
-# recherche de parametres 
+# #recherche de parametres 
 # gs = GridSearchCV(
 #        estimator = RandomForestRegressor( max_depth=11, n_estimators=500),
 #        param_grid = {
@@ -76,24 +134,17 @@ print('TEST :  ', rfFit.score(X_test, y_test))
 #        }, cv=10, n_jobs=-1, scoring='neg_mean_squared_error'
 #    )
 
-#creation d'une foret aleatoire
-rfFit1 = RandomForestRegressor( max_depth=11, n_estimators=200, random_state = 12)
+# #creation d'une foret aleatoire
+# rfFit1 = RandomForestRegressor( max_depth=11, n_estimators=500, random_state = 12)
 
-# Apprentissage de cette foret avec les parametres optimals
-rfFit1.fit(X_train, y_train)
+# # Apprentissage de cette foret avec les parametres optimals
+# rfFit1.fit(X_train, y_train)
 
-#print( "depth ", rfFit1.max_depth, " estimator : ", rfFit1.n_estimators)
+# print( "depth ", gs.estimator.max_depth, " estimator : ", gs.estimator.n_estimators)
 
 
 
-print(" \n\n REGRESSORT FOREST !!!!  ")
+# print(" \n\n REGRESSORT FOREST !!!!  ")
 
-print('Train : ', rfFit1.score(X_train, y_train))
-print('TEST :  ', rfFit1.score(X_test, y_test))
-
-# y_pred = gs.predict(X_test)
-
-# print('Best Params:')
-# print(rfFit1.best_params_)
-# print('Best CV Score:')
-# print(-rfFit1.best_score_)
+# print('Train : ', rfFit1.score(X_train, y_train))
+# print('TEST :  ', rfFit1.score(X_test, y_test))
