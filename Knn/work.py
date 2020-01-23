@@ -25,7 +25,13 @@ X = min_max_scaler.fit_transform(X)
 # compression des données en deux colonnes
 from sklearn.decomposition import PCA
 
-pca = PCA(n_components=2)
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import make_pipeline
+
+
+# Reduce dimension to 2 with PCA
+pca = make_pipeline(StandardScaler(),
+                    PCA(n_components=2, random_state=0))
 X_r = pca.fit(X).transform(X)
 
 
@@ -41,7 +47,7 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
 
 # instantiate learning model (k = 3)
-knn = KNeighborsClassifier(n_neighbors=36, n_jobs = -1)
+knn = KNeighborsClassifier(n_neighbors=34, n_jobs = -1)
 
 # convert Y_train to np.array
 y_train = y_train.to_numpy()
