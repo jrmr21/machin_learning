@@ -34,7 +34,7 @@ import seaborn as sns
 print ('\n  ************** PICTURE ************** \n ')
 
 # get local directory
-folder = "C:/Users/jrmr/Desktop/machine_learning/random_forest/number"
+folder = "C:/Users/jerem/Documents/Git/machine_learning/random_forest/number/"
 
 # lecture des datasets
 df_train = pd.read_csv(folder + "/optdigits_train.csv", header = None)
